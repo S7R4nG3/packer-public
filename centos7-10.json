@@ -1,0 +1,57 @@
+{
+    "variables":{
+        "raw_user":"{{ vault `homelab/data/raw-login` `username`}}",
+        "raw_pass":"{{ vault `homelab/data/raw-login` `password`}}",
+        "vcenter_server":"{{ vault `homelab/data/vcenter` `server`}}",
+        "vcenter_user":"{{ vault `homelab/data/vcenter` `username`}}",
+        "vcenter_pass":"{{ vault `homelab/data/vcenter` `password`}}",
+        "my_user":"{{ vault `homelab/data/raw-login` `my-user`}}"
+    },
+    "builders":[
+        {
+            "type" : "vsphere-iso",
+            "vcenter_server" : "{{ user `vcenter_server` }}",
+            "username" : "{{ user `vcenter_user` }}",
+            "password" : "{{ user `vcenter_pass` }}",
+            "insecure_connection" : true,
+
+            "vm_name" : "linux_centos7_20",
+            "folder" : "VM Templates",
+            "cluster" : "HomelabCluster",
+            "resource_pool" : "HomeLab Pool",
+            "datastore" : "New-Scuzzy",
+            
+            "CPUs" : 2,
+            "cpu_cores" : 2,
+            "CPU_hot_plug" : true,
+            "RAM" : 4096,
+            "RAM_hot_plug" : true,
+            "disk_size" : 10240,
+
+            "guest_os_type" : "centos7_64Guest",
+            "ssh_username" : "{{ user `raw_user` }}",
+            "ssh_password" : "{{ user `raw_pass` }}",
+            "iso_urls" : ["http://mirror.linux.duke.edu/pub/centos/7.7.1908/isos/x86_64/CentOS-7-x86_64-DVD-1908.iso"],
+            "iso_checksum" : "9bba3da2876cb9fcf6c28fb636bcbd01832fe6d84cd7445fa58e44e569b3b4fe",
+            "iso_checksum_type" : "sha256",
+            "convert_to_template" : true,
+
+            "http_directory":".",
+            "network":"VM Network",
+            "network_card":"vmxnet3",
+            "boot_command" : [
+                "<tab> text ks=http://{{ .HTTPIP }}:{{ .HTTPPort }}/http/ks.cfg<enter><wait>"
+            ]
+       }
+    ],
+    "provisioners":[
+        {
+            "type":"shell",
+            "inline":[
+                "echo '{{ user `raw_pass` }}' | sudo -S yum update -y",
+                "echo '{{ user `raw_pass` }}' | sudo -S yum install -y python3",
+                "echo '{{ user `raw_pass` }}' | sudo -S useradd -G wheel -p {{ user `root_pass` }} {{ user `my-user` }}"
+            ]
+        }
+    ]
+}
