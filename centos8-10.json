@@ -1,12 +1,4 @@
 {
-    "variables":{
-        "raw_user":"{{ vault `homelab/data/raw-login` `username`}}",
-        "raw_pass":"{{ vault `homelab/data/raw-login` `password`}}",
-        "vcenter_server":"{{ vault `homelab/data/vcenter` `server`}}",
-        "vcenter_user":"{{ vault `homelab/data/vcenter` `username`}}",
-        "vcenter_pass":"{{ vault `homelab/data/vcenter` `password`}}",
-        "my_user":"{{ vault `homelab/data/raw-login` `my-user`}}"
-    },
     "builders":[
         {
             "type" : "vsphere-iso",
@@ -26,19 +18,26 @@
             "CPU_hot_plug" : true,
             "RAM" : 4096,
             "RAM_hot_plug" : true,
-            "disk_size" : 10240,
-
+            "storage" : [
+                {
+                    "disk_size" : 10240
+                }
+            ],            
+            "network_adapters" : [
+                {
+                    "network":"VM Network",
+                    "network_card":"vmxnet3"
+                }
+            ],
             "guest_os_type" : "centos7_64Guest",
             "ssh_username" : "{{ user `raw_user` }}",
             "ssh_password" : "{{ user `raw_pass` }}",
-            "iso_urls" : ["http://packages.oit.ncsu.edu/centos/8.1.1911/isos/x86_64/CentOS-8.1.1911-x86_64-dvd1.iso"],
-            "iso_checksum" : "3ee3f4ea1538e026fff763e2b284a6f20b259d91d1ad5688f5783a67d279423b",
-            "iso_checksum_type" : "sha256",
+            "iso_urls" : [
+                "http://packages.oit.ncsu.edu/centos/8.2.2004/isos/x86_64/CentOS-8.2.2004-x86_64-dvd1.iso"
+            ],
+            "iso_checksum" : "sha256:c87a2d81d67bbaeaf646aea5bedd70990078ec252fc52f5a7d65ff609871e255",
             "convert_to_template" : true,
-
             "http_directory":".",
-            "network":"VM Network",
-            "network_card":"vmxnet3",
             "boot_command" : [
                 "<tab> text ks=http://{{ .HTTPIP }}:{{ .HTTPPort }}/http/ks.cfg<enter><wait>"
             ]
@@ -50,8 +49,16 @@
             "inline":[
                 "echo '{{ user `raw_pass` }}' | sudo -S yum update -y",
                 "echo '{{ user `raw_pass` }}' | sudo -S yum install -y python3",
-                "echo '{{ user `raw_pass` }}' | sudo -S useradd -G wheel -p {{ user `root_pass` }} {{ user `my-user` }}"
+                "echo '{{ user `raw_pass` }}' | sudo -S useradd -G wheel -p {{ user `root_pass` }} {{ user `my_user` }}"
             ]
         }
-    ]
+    ],
+    "variables":{
+        "raw_user":"{{ vault `homelab/data/raw-login` `username`}}",
+        "raw_pass":"{{ vault `homelab/data/raw-login` `password`}}",
+        "vcenter_server":"{{ vault `homelab/data/vcenter` `server`}}",
+        "vcenter_user":"{{ vault `homelab/data/vcenter` `username`}}",
+        "vcenter_pass":"{{ vault `homelab/data/vcenter` `password`}}",
+        "my_user":"{{ vault `homelab/data/raw-login` `my-user`}}"
+    }
 }

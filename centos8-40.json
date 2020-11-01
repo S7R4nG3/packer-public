@@ -20,7 +20,7 @@
             "RAM_hot_plug" : true,
             "storage" : [
                 {
-                    "disk_size" : 20480
+                    "disk_size" : 40960
                 }
             ],            
             "network_adapters" : [
